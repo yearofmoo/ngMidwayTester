@@ -4,14 +4,31 @@
 
   ngMidwayTester = function() {};
 
-  ngMidwayTester.prototype.register = function(module, callback) {
+  ngMidwayTester.cache = {};
+
+  ngMidwayTester.register = function(module, callback) {
     if(typeof module == 'string') {
       module = angular.module(module);
     }
 
     var name = module.value('appName').name;
-    var testModuleName = 'ngMidwayTest';
 
+    var instance = this.cache[name];
+    if(instance) {
+      instance.reset();
+      callback(instance);
+      return;
+    }
+    
+    instance = new ngMidwayTester();
+    this.cache[name] = instance;
+    instance.register(name, module, function() {
+      callback(instance); 
+    });
+  };
+
+  ngMidwayTester.prototype.register = function(name, module, callback) {
+    var testModuleName = 'ngMidwayTest';
     var that = this;
     this.$module = angular.module(testModuleName, [name]).config(
       ['$provide','$routeProvider','$locationProvider', function($p, $r, $l) {
@@ -52,7 +69,7 @@
   ngMidwayTester.prototype.reset = function(callback) {
     this.resetPath();
     this.resetView();
-    this.apply(callback);
+    this.apply(null, callback);
   };
 
   ngMidwayTester.prototype.resetView = function(callback) {
@@ -64,18 +81,26 @@
   };
 
   ngMidwayTester.prototype.path = function(url, callback) {
-    if(url && callback) {
+    if(url) {
+      callback = callback || function() {};
       this.location().path(url);
-      this.apply(callback);
+      this.apply(null, callback);
     }
     else {
       return this.location().path();
     }
   };
 
-  ngMidwayTester.prototype.directive = function(html, scope) {
+  ngMidwayTester.prototype.directive = function(html, scope, onReady) {
+    var elm = angular.element(html);
     scope = scope || this.scope();
-    return this.$compile(html)(scope);
+    var element = this.$compile(elm)(scope);
+    if(onReady) {
+      this.apply(null, function() {
+        onReady(element); 
+      });
+    }
+    return element;
   };
 
   ngMidwayTester.prototype.module = function(module) {
@@ -88,6 +113,14 @@
 
   ngMidwayTester.prototype.routeProvider = function() {
     return this.$routeProvider;
+  };
+
+  ngMidwayTester.prototype.routeParams = function() {
+    return this.$params;
+  };
+
+  ngMidwayTester.prototype.route = function() {
+    return this.$route;
   };
 
   ngMidwayTester.prototype.service = function(service) {
@@ -105,6 +138,10 @@
 
   ngMidwayTester.prototype.injector = function() {
     return this.$injector;
+  };
+
+  ngMidwayTester.prototype.filter = function() {
+    return this.$filter;
   };
 
   ngMidwayTester.prototype.module = function() {
@@ -138,7 +175,7 @@
 
   ngMidwayTester.prototype.apply = function(scope, callback) {
     callback = callback || function() {};
-    var s = this.scope();
+    var s = scope || this.scope();
     if(s.$$phase) {
       callback();
     }
@@ -151,13 +188,17 @@
 
   ngMidwayTester.prototype.prepareGlobals = function(callback) {
     var that = this;
-    this.inject(['$controller','$location','$routeParams','$rootScope','$compile',function($c, $l, $p, $r, $o) {
+    this.inject(['$controller','$location','$routeParams','$rootScope','$compile','$filter',function($c, $l, $p, $r, $o, $f) {
       that.$controller  = $c;
       that.$location    = $l;
       that.$params      = $p;
       that.$compile     = $o;
+      that.$filter      = $f;
       that.$rootScope   = that.$injector.get('$rootScope');
       that.$route       = that.$injector.get('$route');
+
+      //that.prepareEvents(that);
+
       if(callback) callback();
     }]);
   };
