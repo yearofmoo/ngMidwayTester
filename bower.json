@@ -1,0 +1,7 @@
+{
+  "name": "ngMidwayTester"
+  "devDependencies": {
+    "angularjs": "http://code.angularjs.org/1.2.0rc1/angular.js",
+    "angularjs-route": "http://code.angularjs.org/1.2.0rc1/angular-route.js"
+  }
+}

@@ -1,0 +1,224 @@
+/**
+ * Creates an instance of the midway tester on the specified module. 
+ * 
+ * @class ngMidwayTester
+ * @constructor
+ * @param moduleName the AngularJS module that you wish to test
+ * @param {Boolean} [useNgView=false] creates a view element to manage routes
+ * @param {Object} [doc=window.document] the document object
+ * @param {Object} [wind=window] the window object
+ * @return {Object} An instance of the midway tester
+ */
+;var ngMidwayTester = function(moduleName, useNgView, doc, wind) {
+
+  doc = doc || document;
+  wind = wind || window;
+  var  noop = angular.noop;
+
+  var $rootElement = angular.element(doc.createElement('div')),
+      $cache = {},
+      $timers = [],
+      $viewContainer,
+      $injector,
+      $terminalElement,
+      $viewCounter = 0;
+
+  angular.module('ngMidway', [])
+    .run(function(_$injector_) {
+      $injector = _$injector_;
+    });
+
+  if(useNgView) {
+    $viewContainer = angular.element('<div><div ng-view></div></div>');
+    $rootElement.append($viewContainer);
+
+    $terminalElement = angular.element('<div status="{{status}}"></div>');
+    $rootElement.append($terminalElement);
+  }
+
+  angular.bootstrap($rootElement, ['ng','ngMidway',moduleName]);
+  var $rootModule = angular.module(moduleName);
+
+  return {
+    /**
+     * @method module
+     * @return {Object} Returns the module container object acquired from angular.module(moduleName)
+     */
+    module : function() {
+      return $rootModule;
+    },
+
+    /**
+     * Attaches the $rootElement module to the provided body element
+     * @param {Element} [body=document.body] The element that will be used as the parent (defaults to document.body)
+     * @method attach
+     */
+    attach : function(body) {
+      angular.element(body || doc.body).append($rootElement);
+    },
+
+    /**
+     * Attaches the $rootElement module to the provided body element
+     * @method controller
+     * @param {String} name The name of the controller
+     * @param {Object} [locals] A key/value map of all the injectable services for when the controller is instantiated
+     * @return {Object} The instance of the controller
+     */
+    controller : function(name, locals) {
+      return this.inject('$controller')(name, locals);
+    },
+
+    /**
+     * @method rootScope
+     * @return {Object} The $rootScope object of the module
+     */
+    rootScope : function() {
+      return this.inject('$rootScope');
+    },
+
+    /**
+     * @method rootElement
+     * @return {Object} The $rootElement object of the module
+     */
+    rootElement : function() {
+      return $rootElement;
+    },
+
+    /**
+     * @method viewElement
+     * @return {Element} The current element that has ng-view attached to it
+     */
+    viewElement : function() {
+      var kids = $viewContainer.children();
+      return angular.element(kids[kids.length-1]);
+    },
+
+    /**
+     * @method viewElement
+     * @return {Object} The scope of the current view element
+     */
+    viewScope : function() {
+      return this.viewElement().scope();
+    },
+
+    /**
+     * Runs $scope.$evalAsync() on the provided scope
+     * @param {function} fn The function to be provided to evalAsync
+     * @param {Object} [scope=$rootScope] The scope object which will be used for the eval call
+     * @method evalAsync
+     */
+    evalAsync : function(fn, scope) {
+      (scope || this.rootScope()).$evalAsync(fn);
+    },
+
+    /**
+     * Compiles and links the given HTML
+     *
+     * @method compile
+     * @param {String|Element} html the html or element node which will be compiled
+     * @param {Object} [scope=$rootScope] The scope object which will be linked to the compile
+     * @return {Element} The element node which which is the result of the compilation
+     */
+    compile : function(html, scope) {
+      return this.inject('$compile')(html)(scope || this.rootScope());
+    },
+
+    /**
+     * Performs a digest operation on the given scope
+     *
+     * @method digest
+     * @param {Object} [scope=$rootScope] The scope object which will be used for the compilation
+     */
+    digest : function(scope) {
+      (scope || this.rootScope()).$digest();
+    },
+
+    /**
+     * Performs an apply operation on the given scope
+     *
+     * @method apply
+     * @param {function} fn The callback function which will be used in the apply digest
+     * @param {Object} [scope=$rootScope] scope The scope object which the apply process will be run on
+     */
+    apply : function(fn, scope) {
+      scope = scope || this.inject('$rootScope');
+      scope.$$phase ? fn() : scope.$apply(fn);
+    },
+
+    /*
+     * @method inject
+     * @param {String} item The name of the service which will be fetched
+     * @return {Object} The service fetched from the injection call
+     */
+    inject : function(item) {
+      return $cache[item] || ($cache[item] = $injector.get(item));
+    },
+
+    /**
+     * @method injector
+     * @return {Object} Returns the AngularJS $injector service
+     */
+    injector : function() {
+      return $injector;
+    },
+
+    /**
+     * @method path
+     * @return {String} Returns the path of the current route
+     */
+    path : function() {
+      return this.inject('$location').path();
+    },
+
+    /**
+     * Changes the current route of the page and then fires the callback when the page has loaded
+     *
+     * @param {String} path The given path that the current route will be changed to
+     * @param {function} [callback] The given callback to fire once the view has been fully loaded
+     * @method visit
+     */
+    visit : function(path, callback) {
+      this.rootScope().status = ++$viewCounter;
+      this.until(function() {
+        return parseInt($terminalElement.attr('status')) >= $viewCounter;
+      }, callback || noop);
+
+      var $location = this.inject('$location');
+      this.apply(function() {
+        $location.path(path);
+      });
+    },
+
+    /**
+     * Keeps checking an expression until it returns a truthy value and then runs the provided callback
+     *
+     * @param {function} exp The given function to poll
+     * @param {function} callback The given callback to fire once the exp function returns a truthy value 
+     * @method until
+     */
+    until : function(exp, callback) {
+      var timer, delay = 50;
+      timer = setInterval(function() {
+        if(exp()) {
+          clearTimeout(timer);
+          callback();
+        }
+      }, delay); 
+      $timers.push(timer);
+    },
+
+    /**
+     * Removes the $rootElement and clears the module from the page
+     *
+     * @method destroy
+     */
+    destroy : function() {
+      this.visit('/');
+      angular.forEach($timers, function(timer) {
+        clearTimeout(timer);
+      });
+      wind.location.hash = '';
+      this.rootElement().remove();
+    }
+  };
+};
