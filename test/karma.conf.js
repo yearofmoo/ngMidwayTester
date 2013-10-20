@@ -7,10 +7,14 @@ module.exports = function(config) {
       './bower_components/angularjs-route/index.js',
       './src/ngMidwayTester.js',
       './test/lib/chai.js',
+      './test/spec/custom-view.html',
       './test/spec/ngMidwayTesterSpec.js'
     ],
     singleRun: true,
     frameworks: ['mocha'],
-    browsers: ['Chrome']
+    browsers: ['Chrome'],
+    proxies: {
+      '/': 'http://localhost:8844/'
+    }
   });
 };

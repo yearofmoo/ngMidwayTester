@@ -31,25 +31,38 @@
                     "description": "the AngularJS module that you wish to test"
                 },
                 {
-                    "name": "useNgView",
-                    "description": "creates a view element to manage routes",
-                    "type": "Boolean",
-                    "optional": true,
-                    "optdefault": "false"
-                },
-                {
-                    "name": "doc",
-                    "description": "the document object",
+                    "name": "config",
+                    "description": "",
                     "type": "Object",
                     "optional": true,
-                    "optdefault": "window.document"
-                },
-                {
-                    "name": "wind",
-                    "description": "the window object",
-                    "type": "Object",
-                    "optional": true,
-                    "optdefault": "window"
+                    "props": [
+                        {
+                            "name": "window",
+                            "description": "The window node of the page",
+                            "type": "Object",
+                            "optional": true,
+                            "optdefault": "window"
+                        },
+                        {
+                            "name": "document",
+                            "description": "The document node of the page",
+                            "type": "Object",
+                            "optional": true,
+                            "optdefault": "document"
+                        },
+                        {
+                            "name": "templateUrl",
+                            "description": "The template file for the HTML layout of the tester",
+                            "type": "Object",
+                            "optional": true
+                        },
+                        {
+                            "name": "template",
+                            "description": "The template string for the HTML layout of the tester",
+                            "type": "Object",
+                            "optional": true
+                        }
+                    ]
                 }
             ],
             "return": {
@@ -61,7 +74,7 @@
     "classitems": [
         {
             "file": "src/ngMidwayTester.js",
-            "line": 43,
+            "line": 63,
             "itemtype": "method",
             "name": "module",
             "return": {
@@ -72,7 +85,7 @@
         },
         {
             "file": "src/ngMidwayTester.js",
-            "line": 51,
+            "line": 71,
             "description": "Attaches the $rootElement module to the provided body element",
             "params": [
                 {
@@ -89,7 +102,7 @@
         },
         {
             "file": "src/ngMidwayTester.js",
-            "line": 60,
+            "line": 80,
             "description": "Attaches the $rootElement module to the provided body element",
             "itemtype": "method",
             "name": "controller",
@@ -114,7 +127,7 @@
         },
         {
             "file": "src/ngMidwayTester.js",
-            "line": 71,
+            "line": 91,
             "itemtype": "method",
             "name": "rootScope",
             "return": {
@@ -125,7 +138,7 @@
         },
         {
             "file": "src/ngMidwayTester.js",
-            "line": 79,
+            "line": 99,
             "itemtype": "method",
             "name": "rootElement",
             "return": {
@@ -136,7 +149,7 @@
         },
         {
             "file": "src/ngMidwayTester.js",
-            "line": 87,
+            "line": 107,
             "itemtype": "method",
             "name": "viewElement",
             "return": {
@@ -147,7 +160,7 @@
         },
         {
             "file": "src/ngMidwayTester.js",
-            "line": 96,
+            "line": 115,
             "itemtype": "method",
             "name": "viewElement",
             "return": {
@@ -158,7 +171,7 @@
         },
         {
             "file": "src/ngMidwayTester.js",
-            "line": 104,
+            "line": 123,
             "description": "Runs $scope.$evalAsync() on the provided scope",
             "params": [
                 {
@@ -180,7 +193,7 @@
         },
         {
             "file": "src/ngMidwayTester.js",
-            "line": 114,
+            "line": 133,
             "description": "Compiles and links the given HTML",
             "itemtype": "method",
             "name": "compile",
@@ -206,7 +219,7 @@
         },
         {
             "file": "src/ngMidwayTester.js",
-            "line": 126,
+            "line": 145,
             "description": "Performs a digest operation on the given scope",
             "itemtype": "method",
             "name": "digest",
@@ -223,7 +236,7 @@
         },
         {
             "file": "src/ngMidwayTester.js",
-            "line": 136,
+            "line": 155,
             "description": "Performs an apply operation on the given scope",
             "itemtype": "method",
             "name": "apply",
@@ -245,7 +258,7 @@
         },
         {
             "file": "src/ngMidwayTester.js",
-            "line": 157,
+            "line": 176,
             "itemtype": "method",
             "name": "injector",
             "return": {
@@ -256,7 +269,7 @@
         },
         {
             "file": "src/ngMidwayTester.js",
-            "line": 165,
+            "line": 184,
             "itemtype": "method",
             "name": "path",
             "return": {
@@ -267,7 +280,7 @@
         },
         {
             "file": "src/ngMidwayTester.js",
-            "line": 173,
+            "line": 192,
             "description": "Changes the current route of the page and then fires the callback when the page has loaded",
             "params": [
                 {
@@ -288,7 +301,7 @@
         },
         {
             "file": "src/ngMidwayTester.js",
-            "line": 192,
+            "line": 211,
             "description": "Keeps checking an expression until it returns a truthy value and then runs the provided callback",
             "params": [
                 {
@@ -308,7 +321,7 @@
         },
         {
             "file": "src/ngMidwayTester.js",
-            "line": 210,
+            "line": 229,
             "description": "Removes the $rootElement and clears the module from the page",
             "itemtype": "method",
             "name": "destroy",

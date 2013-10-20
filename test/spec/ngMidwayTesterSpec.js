@@ -37,6 +37,64 @@ describe('ngMidwayTester', function() {
     expect(tester.inject('$window')).to.equal($window);
   });
 
+  describe('template options', function() {
+    it('should use a custom index.html template string', function(done) {
+      var example = angular.module(appName, ['ngRoute'])
+        .run(function($rootScope) {
+          $rootScope.value = 'true';
+        })
+        .config(function($routeProvider) {
+          $routeProvider.when('/path2', {
+            controller: function($scope) {
+              $scope.page = 'two'; 
+            },
+            template : 'two'
+          });
+        });
+
+      tester = ngMidwayTester(appName, {
+        template : '<h1>title</h1>' +
+                   '<div ng-view></div>'
+      });
+      expect(tester.module()).to.equal(example);
+      expect(tester.rootScope().value).to.equal('true');
+
+      tester.visit('/path2', function() {
+        expect(tester.path()).to.equal('/path2');
+        expect(tester.viewElement().text()).to.contain('two');
+        done();
+      });
+    });
+
+    it('should use a custom index.html template file', function(done) {
+      var example = angular.module(appName, ['ngRoute'])
+        .run(function($rootScope) {
+          $rootScope.value = 'true';
+        })
+        .config(function($routeProvider) {
+          $routeProvider.when('/path-10', {
+            controller: function($scope) {
+              $scope.page = 'ten'; 
+            },
+            template : 'ten'
+          });
+        });
+
+      tester = ngMidwayTester(appName, {
+        templateUrl : './test/spec/custom-view.html'
+      });
+
+      expect(tester.module()).to.equal(example);
+      expect(tester.rootScope().value).to.equal('true');
+
+      tester.visit('/path-10', function() {
+        expect(tester.path()).to.equal('/path-10');
+        expect(tester.viewElement().text()).to.contain('ten');
+        done();
+      });
+    });
+  });
+
   describe('scope', function() {
     it('should perform an eval async operation', function() {
       var example = angular.module(appName, [])

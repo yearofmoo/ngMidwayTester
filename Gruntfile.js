@@ -35,6 +35,12 @@ module.exports = function(grunt) {
           port: 5555,
           keepalive: true
         }
+      },
+      test: {
+        options: {
+          base: './',
+          port: 8844
+        }
       }
     },
 
@@ -75,9 +81,10 @@ module.exports = function(grunt) {
   });
 
   //single run tests
-  grunt.registerTask('test', ['karma:test']);
-  grunt.registerTask('autotest', ['karma:auto']);
-  grunt.registerTask('coverage', ['install','karma:coverage','open:coverage','connect:coverage']);
-  grunt.registerTask('docs', ['install','shell:docs','open:docs','connect:docs']);
+  grunt.registerTask('test', ['connect:test','karma:test']);
+  grunt.registerTask('autotest', ['connect:test','karma:auto']);
+  grunt.registerTask('coverage', ['install','connect:test','karma:coverage','open:coverage','connect:coverage']);
+  grunt.registerTask('docs', ['gen-docs','open:docs','connect:docs']);
+  grunt.registerTask('gen-docs', ['install','shell:docs']);
   grunt.registerTask('install', ['shell:npm_install','shell:bower_install']);
 };

@@ -4,16 +4,19 @@
  * @class ngMidwayTester
  * @constructor
  * @param moduleName the AngularJS module that you wish to test
- * @param {Boolean} [useNgView=false] creates a view element to manage routes
- * @param {Object} [doc=window.document] the document object
- * @param {Object} [wind=window] the window object
+ * @param {Object} [config]
+ * @param {Object} [config.window=window] The window node of the page
+ * @param {Object} [config.document=document] The document node of the page
+ * @param {Object} [config.templateUrl] The template file for the HTML layout of the tester
+ * @param {Object} [config.template] The template string for the HTML layout of the tester
  * @return {Object} An instance of the midway tester
  */
-;var ngMidwayTester = function(moduleName, useNgView, doc, wind) {
+;var ngMidwayTester = function(moduleName, options) {
 
-  doc = doc || document;
-  wind = wind || window;
-  var  noop = angular.noop;
+  options = options || {};
+  var doc = options.document || document;
+  var wind = options.window || window;
+  var noop = angular.noop;
 
   var $rootElement = angular.element(doc.createElement('div')),
       $cache = {},
@@ -23,18 +26,35 @@
       $terminalElement,
       $viewCounter = 0;
 
+  var viewSelector = 'ng-view, [ng-view], .ng-view, [x-ng-view], [data-ng-view]';
+
   angular.module('ngMidway', [])
     .run(function(_$injector_) {
       $injector = _$injector_;
     });
 
-  if(useNgView) {
+  if(options.templateUrl) {
+    var request = new XMLHttpRequest();
+    request.open('GET', options.templateUrl, false);
+    request.send(null);
+
+    if (request.status != 200) {
+      throw new Error('Unable to download template file');
+    }
+  }
+
+  if(options.template) {
+    $rootElement.html(options.template);
+    var view = angular.element($rootElement[0].querySelector(viewSelector));
+    $viewContainer = view.parent();
+  }
+  else {
     $viewContainer = angular.element('<div><div ng-view></div></div>');
     $rootElement.append($viewContainer);
-
-    $terminalElement = angular.element('<div status="{{status}}"></div>');
-    $rootElement.append($terminalElement);
   }
+
+  $terminalElement = angular.element('<div status="{{status}}"></div>');
+  $rootElement.append($terminalElement);
 
   angular.bootstrap($rootElement, ['ng','ngMidway',moduleName]);
   var $rootModule = angular.module(moduleName);
@@ -89,8 +109,7 @@
      * @return {Element} The current element that has ng-view attached to it
      */
     viewElement : function() {
-      var kids = $viewContainer.children();
-      return angular.element(kids[kids.length-1]);
+      return angular.element($viewContainer[0].querySelector(viewSelector));
     },
 
     /**
