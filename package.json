@@ -6,7 +6,7 @@
     "url": "git@github.com:yearofmoo/ngMidwayTester.git"
   },
   "scripts": {
-    "test": "./node_modules/.bin/karma start ./test/karma.conf.js --single-run --browsers PhantomJS"
+    "test": "grunt travis"
   },
   "devDependencies": {
     "bower": "latest",
