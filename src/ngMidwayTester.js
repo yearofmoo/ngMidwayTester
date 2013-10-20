@@ -19,7 +19,6 @@
   var noop = angular.noop;
 
   var $rootElement = angular.element(doc.createElement('div')),
-      $cache = {},
       $timers = [],
       $viewContainer,
       $injector,
@@ -170,7 +169,7 @@
      * @return {Object} The service fetched from the injection call
      */
     inject : function(item) {
-      return $cache[item] || ($cache[item] = $injector.get(item));
+      return $injector.get(item);
     },
 
     /**
