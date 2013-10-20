@@ -5,8 +5,10 @@ describe('ngMidwayTester', function() {
       appName = 'MyMod';
 
   afterEach(function() {
-    tester.destroy();
-    tester = null;
+    if(tester) {
+      tester.destroy();
+      tester = null;
+    }
   });
 
   it('should register a module', function() {
@@ -92,6 +94,29 @@ describe('ngMidwayTester', function() {
         expect(tester.viewElement().text()).to.contain('ten');
         done();
       });
+    });
+
+    it('should throw an error when a file downloaded from templateUrl is not found', function() {
+      var example = angular.module(appName, ['ngRoute'])
+        .run(function($rootScope) {
+          $rootScope.value = 'true';
+        })
+        .config(function($routeProvider) {
+          $routeProvider.when('/path-10', {
+            controller: function($scope) {
+              $scope.page = 'ten'; 
+            },
+            template : 'ten'
+          });
+        });
+
+      var fn = function() {
+        tester = ngMidwayTester(appName, {
+          templateUrl : '../../some-file.html'
+        });
+      };
+
+      expect(fn).to.throw('ngMidwayTester: Unable to download template file');
     });
   });
 

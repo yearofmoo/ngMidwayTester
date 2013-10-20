@@ -38,7 +38,7 @@
     request.send(null);
 
     if (request.status != 200) {
-      throw new Error('Unable to download template file');
+      throw new Error('ngMidwayTester: Unable to download template file');
     }
   }
 
