@@ -75,7 +75,7 @@ module.exports = function(grunt) {
   });
 
   //single run tests
-  grunt.registerTask('test', ['install','karma:test']);
+  grunt.registerTask('test', ['karma:test']);
   grunt.registerTask('autotest', ['karma:auto']);
   grunt.registerTask('coverage', ['install','karma:coverage','open:coverage','connect:coverage']);
   grunt.registerTask('docs', ['install','shell:docs','open:docs','connect:docs']);
