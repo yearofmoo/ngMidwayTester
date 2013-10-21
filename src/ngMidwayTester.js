@@ -233,12 +233,15 @@
      * @method destroy
      */
     destroy : function() {
-      this.visit('/');
       angular.forEach($timers, function(timer) {
         clearTimeout(timer);
       });
-      wind.location.hash = '';
-      this.rootElement().remove();
+
+      var self = this;
+      this.apply(function() {
+        self.inject('$location').path('/');
+        self.rootElement().remove();
+      });
     }
   };
 };
