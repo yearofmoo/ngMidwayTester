@@ -40,6 +40,8 @@
     if (request.status != 200) {
       throw new Error('ngMidwayTester: Unable to download template file');
     }
+
+    options.template = request.responseText;
   }
 
   if(options.template) {

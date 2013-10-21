@@ -91,7 +91,9 @@ describe('ngMidwayTester', function() {
 
       tester.visit('/path-10', function() {
         expect(tester.path()).to.equal('/path-10');
-        expect(tester.viewElement().text()).to.contain('ten');
+        var html = tester.rootElement().html();
+        expect(html).to.contain('<main id="container">');
+        expect(html).to.contain('ten');
         done();
       });
     });
