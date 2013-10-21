@@ -238,7 +238,7 @@
       });
 
       var self = this;
-      this.apply(function() {
+      this.evalAsync(function() {
         self.inject('$location').path('/');
         self.rootElement().remove();
       });
