@@ -9,6 +9,7 @@
  * @param {Object} [config.document=document] The document node of the page
  * @param {Object} [config.templateUrl] The template file for the HTML layout of the tester
  * @param {Object} [config.template] The template string for the HTML layout of the tester
+ * @param {Object} [config.mockLocationPaths=true] Whether or not to fake the URL change in the browser address bar
  * @return {Object} An instance of the midway tester
  */
 ;var ngMidwayTester = function(moduleName, options) {
@@ -18,19 +19,36 @@
   var wind = options.window || window;
   var noop = angular.noop;
 
+  var mockLocationPaths = options.mockLocationPaths == null ? true : !!options.mockLocationPaths;
+
   var $rootElement = angular.element(doc.createElement('div')),
       $timers = [],
       $viewContainer,
-      $injector,
       $terminalElement,
       $viewCounter = 0;
 
   var viewSelector = 'ng-view, [ng-view], .ng-view, [x-ng-view], [data-ng-view]';
 
-  angular.module('ngMidway', [])
-    .run(function(_$injector_) {
-      $injector = _$injector_;
+  var midwayModule = angular.module('ngMidway', []);
+
+  if(mockLocationPaths) {
+    midwayModule.config(function($provide) {
+      $provide.decorator('$location', ['$delegate', '$rootScope', function($delegate, $rootScope) {
+        var _path = $delegate.path();
+        $delegate.path = function(path) {
+          if(path) {
+            _path = path;
+            $rootScope.$broadcast('$locationChangeSuccess', path);
+            return this;
+          }
+          else {
+            return _path;
+          }
+        };
+        return $delegate;
+      }]);
     });
+  }
 
   if(options.templateUrl) {
     var request = new XMLHttpRequest();
@@ -54,11 +72,12 @@
     $rootElement.append($viewContainer);
   }
 
-  $terminalElement = angular.element('<div status="{{status}}"></div>');
+  $terminalElement = angular.element('<div status="{{__view_status}}"></div>');
   $rootElement.append($terminalElement);
 
-  angular.bootstrap($rootElement, ['ng','ngMidway',moduleName]);
+  var $injector = angular.bootstrap($rootElement, ['ng','ngMidway',moduleName]);
   var $rootModule = angular.module(moduleName);
+  angular.element(doc.body).append($rootElement);
 
   return {
     /**
@@ -198,7 +217,7 @@
      * @method visit
      */
     visit : function(path, callback) {
-      this.rootScope().status = ++$viewCounter;
+      this.rootScope().__view_status = ++$viewCounter;
       this.until(function() {
         return parseInt($terminalElement.attr('status')) >= $viewCounter;
       }, callback || noop);
@@ -237,11 +256,10 @@
         clearTimeout(timer);
       });
 
-      var self = this;
-      this.evalAsync(function() {
-        self.inject('$location').path('/');
-        self.rootElement().remove();
-      });
+     var body = angular.element(document.body);
+     body.removeData();
+     $rootElement.remove();
+     this.rootScope().$destroy();
     }
   };
 };

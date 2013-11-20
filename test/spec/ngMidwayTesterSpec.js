@@ -239,4 +239,28 @@ describe('ngMidwayTester', function() {
     });
   });
 
+  describe('$location', function() {
+
+    it('should change the location properly on multiple instantiations', function() {
+      var mod = angular.module(appName, []);
+
+      var tester1 = ngMidwayTester(appName);
+      tester1.inject('$location').path('/home');
+      tester1.digest();
+      expect(tester1.path()).to.equal('/home');
+      tester1.destroy();
+
+      var tester2 = ngMidwayTester(appName);
+      tester2.inject('$location').path('/other');
+      tester2.digest();
+      expect(tester2.path()).to.equal('/other');
+      tester2.destroy();
+
+      var tester3 = ngMidwayTester(appName);
+      tester3.inject('$location').path('/another');
+      tester3.digest();
+      expect(tester3.path()).to.equal('/another');
+      tester3.destroy();
+    });
+  });
 });
